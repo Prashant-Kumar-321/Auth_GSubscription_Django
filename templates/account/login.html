@@ -1,0 +1,214 @@
+{% extends "layouts/a.html" %}
+{% load i18n %}
+{% load allauth account %}
+
+{% block style %}
+
+<style type="text/tailwindcss">
+
+    .card{
+        @apply bg-neutral-200 border-2 border-neutral-500 p-7 sm:max-w-2xl mx-auto
+        rounded-lg w-5/6 shadow-2xl
+    }
+
+    .form{
+        @apply flex flex-col gap-y-4
+    }
+
+    .form p.form-input-control{
+        @apply flex items-center bg-white w-full rounded-lg p-2 
+    }
+
+    .form p{
+         input[type="text"], input[type="password"]{
+            @apply w-full outline-none p-2
+        }
+        input[type="checkbox"]{
+            @apply w-5 h-5
+        }
+
+        input{
+            @apply placeholder:text-lg
+        }
+       
+        label{
+            @apply cursor-pointer
+        }
+        label i {
+            @apply text-xl flex items-center justify-center w-8 h-8 cursor-pointer transition duration-300 ease-in-out
+        }
+
+        label i:hover{
+            @apply scale-105
+        }
+    }
+
+    .form div {
+        @apply text-xl w-full flex sm:flex-row flex-col sm:justify-between gap-y-3
+    }
+
+    .submit {
+        @apply px-3 py-2 text-2xl text-white rounded-lg bg-green-500 w-52 transition duration-200 ease-in-out
+        hover:bg-green-400 active:scale-90
+    }
+
+    .provider-list{
+        @apply flex flex-col gap-5
+    }
+
+    .provider-list p {
+        @apply w-full flex justify-center
+    }
+
+    .provider-list p {
+        a {
+            @apply w-full sm:w-5/6 p-3 rounded-lg bg-white text-center space-x-6 transition duration-500 ease-in-out
+
+        }
+
+        a span {
+            @apply text-xl
+        }
+
+        a span i{
+            @apply text-2xl
+        }
+    }
+</style>
+
+{% endblock style %}
+
+{% block content %}
+
+    <h1 class="text-bold text-3xl text-center">Sign In</h1>
+
+    <!-- Regular Social Account -->
+    {% if not SOCIALACCOUNT_ONLY %}
+        {% url 'account_login' as login_url %}
+
+        {% comment %} {% element form form=form method="post" action=login_url tags="entrance,login" class="my-class" %} {% endcomment %}
+        <form action="{{login_url}}" method="post" class="form">
+            {% comment %} {% slot body %} {% endcomment %}
+                {% csrf_token %}
+
+                <!-- Displaying form errors is any -->
+                {% if form.non_field_errors %}
+                    <ul class="errorlist">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% for field in form %}
+                    {% if field.name != 'remember' %}
+                        <p class="form-input-control">
+                            {{ field.label_tag }}
+                            {{ field }}
+                        </p>
+                       
+                    {% endif %}
+                {% endfor %}
+
+                <div>
+                    <p class="flex items-center gap-2">
+                        {{form.remember.label_tag}} {{form.remember}}
+                    </p>
+
+                    <p>
+                        <span>{{ form.password.help_text|safe }} <!-- anchor element forgot password -->
+                        </span>
+                    </p>
+                    <p>
+                        <a href="{{signup_url}}">
+                            <span>Register</span>
+                        </a>
+                    </p>
+                </div> 
+                {{ redirect_field }}
+               
+            {% comment %} {% endslot %} {% endcomment %}
+
+            {% comment %} {% slot actions %} {% endcomment %}
+                <p>
+                    <button type="submit" class="submit">Sign In</button>
+                </p>
+            {% comment %} {% endslot %} {% endcomment %}
+
+        {% comment %} {% endelement %} {% endcomment %}
+        </form>
+
+
+    {% endif %}
+
+    {% if LOGIN_BY_CODE_ENABLED or PASSKEY_LOGIN_ENABLED %}
+        {% element hr %}
+        {% endelement %}
+        {% element button_group vertical=True %}
+            {% if PASSKEY_LOGIN_ENABLED %}
+                {% element button type="submit" form="mfa_login" id="passkey_login" tags="prominent,login,outline,primary" %}
+                    {% trans "Sign in with a passkey" %}
+                {% endelement %}
+            {% endif %}
+            {% if LOGIN_BY_CODE_ENABLED %}
+                {% element button href=request_login_code_url tags="prominent,login,outline,primary" %}
+                    {% trans "Mail me a sign-in code" %}
+                {% endelement %}
+            {% endif %}
+        {% endelement %}
+    {% endif %}
+
+    {% if SOCIALACCOUNT_ENABLED %}
+    <div>
+
+        <!-- Horizontal line -->
+        <div class="flex flex-row items-center gap-x-1 ">
+            <p class="flex-grow-[1] border-t-[1px] border-gray-500"></p>
+            <p>OR</p>
+            <p class="flex-grow-[1] border-t-[1px] border-gray-500"></p>
+        </div>
+
+        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+
+    </div>
+    {% endif %}
+
+{% endblock content %}
+
+{% block extra_body %}
+    {{ block.super }}
+    {% if PASSKEY_LOGIN_ENABLED %}
+        {% include "mfa/webauthn/snippets/login_script.html" with button_id="passkey_login" %}
+    {% endif %}
+{% endblock %}
+
+
+{% block script %}
+<script>
+    const inputFields = document.querySelectorAll('.form p.form-input-control input'); 
+
+    inputFields.forEach(field => {
+        field.addEventListener('focus', function (event) {
+            const parent = this.parentElement; 
+            parent.classList.add('shadow-xl');  
+        }); 
+
+        field.addEventListener('blur', function (event){
+            const parent = this.parentElement; 
+            parent.classList.remove('shadow-xl');
+        })
+    }); 
+
+    const labels = document.querySelectorAll("p.form-input-control label"); 
+
+    labels.forEach(label =>{
+        label.childNodes.forEach(chNode => {
+            if(chNode.nodeType === Node.TEXT_NODE){
+                chNode.remove(); 
+            }
+        }); 
+    }); 
+
+
+</script>
+{% endblock %}

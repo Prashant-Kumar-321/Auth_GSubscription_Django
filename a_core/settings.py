@@ -63,7 +63,7 @@ ROOT_URLCONF = 'a_core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -106,6 +106,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Login form settings 
+ACCOUNT_FORMS = {
+    'login': 'a_user_authentication.forms.LoginForm'
+}
 
 
 AUTHENTICATION_BACKENDS = [
