@@ -82,9 +82,18 @@ WSGI_APPLICATION = 'a_core.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
+
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'snappost_db',
+        'USER': 'postgres',
+        'PASSWORD': 'snappost_1st',
+        'HOST': '34.47.224.88',
+        'PORT': '5432',
     }
 }
 
